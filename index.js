@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -28,6 +28,9 @@ async function run() {
 
     const storyCollection = client.db("touristDB").collection("stories");
     const packageCollection = client.db("touristDB").collection("packages");
+    const guideCollection = client.db("touristDB").collection("guides");
+    const bookingCollection = client.db("touristDB").collection("bookings");
+    const wishListCollection = client.db("touristDB").collection("wishList");
 
     // Read data
 
@@ -37,11 +40,51 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/packages/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await packageCollection.findOne(query)
+      res.send(result);
+  })
+
     app.get("/stories", async (req, res) => {
       const cursor = storyCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    app.get("/guides", async (req, res) => {
+      const cursor = guideCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.get("/bookings", async (req, res) => {
+      const email = req.query.email;
+      const query = {email: email};
+      const cursor = bookingCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+    app.get("/wishList", async (req, res) => {
+      const email = req.query.email;
+      const query = {email: email};
+      const cursor = wishListCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    // post data
+
+    app.post("/bookings", async(req, res) => {
+      const bookedPackage = req.body;
+      const result = await bookingCollection.insertOne(bookedPackage);
+      res.send(result);
+    })
+    app.post("/wishList", async(req, res) => {
+      const wishListedPackage = req.body;
+      const result = await wishListCollection.insertOne(wishListedPackage);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
