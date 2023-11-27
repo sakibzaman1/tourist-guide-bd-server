@@ -65,6 +65,14 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    app.get('/bookings/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await bookingCollection.findOne(query)
+      res.send(result);
+  });
+
     app.get("/wishList", async (req, res) => {
       const email = req.query.email;
       const query = {email: email};
@@ -72,6 +80,13 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    app.get('/wishList/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await wishListCollection.findOne(query)
+      res.send(result);
+  })
 
     // post data
 
@@ -84,7 +99,23 @@ async function run() {
       const wishListedPackage = req.body;
       const result = await wishListCollection.insertOne(wishListedPackage);
       res.send(result);
-    })
+    });
+
+    // delete data
+
+    app.delete('/wishList/:id', async(req, res)=> {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await wishListCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.delete('/bookings/:id', async(req, res)=> {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
