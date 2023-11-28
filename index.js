@@ -31,8 +31,28 @@ async function run() {
     const guideCollection = client.db("touristDB").collection("guides");
     const bookingCollection = client.db("touristDB").collection("bookings");
     const wishListCollection = client.db("touristDB").collection("wishList");
+    const userCollection = client.db("touristDB").collection("users");
 
-    // Read data
+    // READ DATA
+
+    // Users
+
+    app.get("/users", async (req, res) => {
+      const cursor = userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
+    app.get('/users/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await userCollection.findOne(query)
+      res.send(result);
+  });
+
+
+
+    // Packages
 
     app.get("/packages", async (req, res) => {
       const cursor = packageCollection.find();
@@ -45,7 +65,9 @@ async function run() {
       const query = { _id: new ObjectId(id) }
       const result = await packageCollection.findOne(query)
       res.send(result);
-  })
+  });
+
+  // Stories
 
     app.get("/stories", async (req, res) => {
       const cursor = storyCollection.find();
@@ -58,13 +80,18 @@ async function run() {
       const query = { _id: new ObjectId(id) }
       const result = await storyCollection.findOne(query)
       res.send(result);
-  })
+  });
+
+  // Guides
 
     app.get("/guides", async (req, res) => {
       const cursor = guideCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     });
+
+    // Bookings
+
     app.get("/bookings", async (req, res) => {
       const email = req.query.email;
       const query = {email: email};
@@ -80,6 +107,8 @@ async function run() {
       res.send(result);
   });
 
+  // Wishlist
+
     app.get("/wishList", async (req, res) => {
       const email = req.query.email;
       const query = {email: email};
@@ -93,21 +122,40 @@ async function run() {
       const query = { _id: new ObjectId(id) }
       const result = await wishListCollection.findOne(query)
       res.send(result);
-  })
+  });
 
-    // post data
+    // POST DATA
+
+    // Users
+
+    app.post("/users", async(req, res) => {
+      const user = req.body;
+      const query = {email: user.email};
+      const existingUser = await userCollection.findOne(query);
+      if(existingUser){
+        return res.send({message: 'User Already Exists', insertedId: null})
+      }
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+    });
+
+    // bookings
 
     app.post("/bookings", async(req, res) => {
       const bookedPackage = req.body;
       const result = await bookingCollection.insertOne(bookedPackage);
       res.send(result);
-    })
+    });
+
+    // Wishlist
+
     app.post("/wishList", async(req, res) => {
       const wishListedPackage = req.body;
       const result = await wishListCollection.insertOne(wishListedPackage);
       res.send(result);
     });
 
+    // Stories
     
        app.post('/stories', async(req, res)=> {
         const newStory = req.body;
@@ -116,8 +164,35 @@ async function run() {
         res.send(result);
     });
 
+    // PATCH DATA
 
-    // delete data
+    // users
+
+    app.patch('/users/admin/:id', async(req, res)=> {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          role: 'admin'
+        }
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result)
+    })
+
+
+    // DELETE DATA
+
+    // Users
+
+    app.delete('/users/:id', async(req, res)=> {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await userCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // Wishlist
 
     app.delete('/wishList/:id', async(req, res)=> {
       const id = req.params.id;
@@ -125,6 +200,8 @@ async function run() {
       const result = await wishListCollection.deleteOne(query);
       res.send(result);
     });
+
+    // Bookings
 
     app.delete('/bookings/:id', async(req, res)=> {
       const id = req.params.id;
