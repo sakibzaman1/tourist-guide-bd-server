@@ -53,6 +53,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/stories/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await storyCollection.findOne(query)
+      res.send(result);
+  })
+
     app.get("/guides", async (req, res) => {
       const cursor = guideCollection.find();
       const result = await cursor.toArray();
@@ -100,6 +107,15 @@ async function run() {
       const result = await wishListCollection.insertOne(wishListedPackage);
       res.send(result);
     });
+
+    
+       app.post('/stories', async(req, res)=> {
+        const newStory = req.body;
+        console.log(newStory)
+        const result = await storyCollection.insertOne(newStory);
+        res.send(result);
+    });
+
 
     // delete data
 
