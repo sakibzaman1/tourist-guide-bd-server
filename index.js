@@ -70,7 +70,18 @@ async function run() {
         return res.status(403).send({message: 'Forbidden access'})
       }
       next();
-    }
+    };
+
+    const verifyGuide = async(req, res, next)=> {
+      const email = req.decoded.email;
+      const query = {email: email};
+      const user = await userCollection.findOne(query);
+      const isGuide = user?.role === 'guide';
+      if(!isGuide){
+        return res.status(403).send({message: 'Forbidden access'})
+      }
+      next();
+    };
 
     // READ DATA
 
@@ -106,8 +117,26 @@ async function run() {
 
     }
     res.send({admin})
-  })
+  });
 
+  // guide check
+
+
+app.get('/users/guide/:email', verifyToken, async (req, res) => {
+    const email = req.params.email;
+    if(email !== req.decoded.email){
+      return res.status(403).send({message: 'Forbidden access'})
+    }
+
+    const query = {email: email};
+    const user = await userCollection.findOne(query);
+    let guide = false;
+    if(user){
+      guide = user?.role === 'guide';
+
+    }
+    res.send({guide})
+  });
 
 
     // Packages
@@ -225,6 +254,7 @@ async function run() {
     // PATCH DATA
 
     // users
+    // admin
 
     app.patch('/users/admin/:id', verifyToken, verifyAdmin, async(req, res)=> {
       const id = req.params.id;
@@ -236,7 +266,21 @@ async function run() {
       };
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result)
-    })
+    });
+
+    // guide
+
+    app.patch('/users/guide/:id', verifyToken, verifyAdmin, async(req, res)=> {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)};
+      const updatedDoc = {
+        $set: {
+          role: 'guide'
+        }
+      };
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result)
+    });
 
 
     // DELETE DATA
