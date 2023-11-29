@@ -251,6 +251,25 @@ app.get('/users/guide/:email', verifyToken, async (req, res) => {
         res.send(result);
     });
 
+       // Packages
+    
+       app.post('/packages', async(req, res)=> {
+        const newPackage = req.body;
+        console.log(newPackage)
+        const result = await packageCollection.insertOne(newPackage);
+        res.send(result);
+    });
+
+    // guides
+
+    app.post('/guides', async(req, res)=> {
+      const newGuide = req.body;
+      console.log(newGuide)
+      const result = await guideCollection.insertOne(newGuide);
+      res.send(result);
+  });
+
+
     // PATCH DATA
 
     // users
